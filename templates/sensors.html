@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Liste des capteurs</h2>
+<ul>
+    {% for sensor in sensors %}
+        <li>ID: {{ sensor.id }} | Ip: {{ sensor.sender_ip }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

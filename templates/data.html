@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Données des capteurs</h2>
+
+<!-- 🔍 Sélecteur de capteur -->
+<form method="get" style="margin-bottom: 1em;">
+    <label for="sensor_id">Filtrer par capteur ID :</label>
+    <select name="sensor_id" id="sensor_id">
+        <option value="">Tous</option>
+        {% for sid in all_sensor_ids %}
+            <option value="{{ sid }}" {% if sid|string == request.args.get('sensor_id') %}selected{% endif %}>Capteur {{ sid }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filtrer</button>
+</form>
+
+<!-- 📊 Tableau des données -->
+<div class="table-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th>Capteur ID</th>
+                <th>Valeur</th>
+                <th>Horodatage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in data %}
+            <tr>
+                <td>{{ entry.sender_id }}</td>
+                <td>{{ entry.data }}</td>
+                <td>{{ entry.timestamp | datetimeformat }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    window.onload = function () {
+        const wrapper = document.querySelector('.table-wrapper');
+        if (wrapper) {
+            wrapper.scrollTop = wrapper.scrollHeight;
+        }
+    };
+</script>
+
+<style>
+.table-wrapper {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 0px;
+}
+.table-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+    top: 0;
+}
+.table-wrapper thead th {
+    position: sticky;
+    top: 0;
+    background-color: #222;
+    z-index: 1;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+.table-wrapper tbody td {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+</style>
+
+<!-- 📈 Graphiques -->
+<h2>Graphiques par Capteur</h2>
+{% for sensor_id, points in chart_data.items() %}
+    <h3>Capteur ID: {{ sensor_id }}</h3>
+    <canvas id="chart-{{ sensor_id }}" width="600" height="400"></canvas>
+    <script>
+        const ctx{{sensor_id}} = document.getElementById('chart-{{ sensor_id }}').getContext('2d');
+        new Chart(ctx{{sensor_id}}, {
+            type: 'line',
+            data: {
+                labels: {{ points | map(attribute='timestamp') | list | tojson }},
+                datasets: [{
+                    label: 'Valeur (décimal)',
+                    data : {{ points | map(attribute='value') | list | tojson }},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.2
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Horodatage' }},
+                    y: { title: { display: true, text: 'Valeur décimale' }}
+                }
+            }
+        });
+    </script>
+{% endfor %}
+{% endblock %}

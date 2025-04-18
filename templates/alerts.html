@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Alertes</h2>
+<ul>
+    {% for alert in alerts %}
+        <li>
+            [{{ "✅" if alert.acknowledged else "❗" }}] {{ alert.message }}
+            {% if not alert.acknowledged %}
+                <form method="post" action="/alerts/{{ alert.id }}/acknowledge" style="display:inline;">
+                    <button type="submit">Reconnaître</button>
+                </form>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}
